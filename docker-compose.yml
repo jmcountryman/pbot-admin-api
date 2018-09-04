@@ -9,7 +9,18 @@ services:
     build: .
     command: bundle exec rails s -b '0.0.0.0'
     ports:
-      - "3000:3000"
+      - 3000:3000
+    volumes:
+      - .:/api
+    depends_on:
+      - db
+  api-debug:
+    build: .
+    command: bundle exec rdebug-ide --host 0.0.0.0 --port 1234 --dispatcher-port 26162 -- bin/rails s -b '0.0.0.0'
+    ports:
+      - 3000:3000
+      - 1234:1234
+      - 26162:26162
     volumes:
       - .:/api
     depends_on:
@@ -17,7 +28,7 @@ services:
   web:
     build: ../pbot-admin-web
     ports:
-      - "8000:8000"
+      - 8000:8000
     volumes:
       - ../pbot-admin-web:/web
     command: yarn start
