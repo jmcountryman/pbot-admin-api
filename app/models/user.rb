@@ -3,7 +3,10 @@ class User < ApplicationRecord
 
   has_one :oauth_token
 
-  def self.from_token_payload(payload)
-    payload['sub']
+  def to_token_payload
+    {
+      sub: self.id,
+      name: self.username
+    }
   end
 end
