@@ -140,8 +140,6 @@ GEM
       rspec-mocks (~> 3.8.0)
       rspec-support (~> 3.8.0)
     rspec-support (3.8.0)
-    ruby-debug-ide (0.6.1)
-      rake (>= 0.8.1)
     ruby_dep (1.5.0)
     spring (2.0.2)
       activesupport (>= 4.2)
@@ -177,7 +175,6 @@ DEPENDENCIES
   puma (~> 3.11)
   rails (~> 5.2.1)
   rspec-rails (~> 3.8)
-  ruby-debug-ide
   spring
   spring-watcher-listen (~> 2.0.0)
   tzinfo-data

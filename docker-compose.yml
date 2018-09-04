@@ -14,17 +14,6 @@ services:
       - .:/api
     depends_on:
       - db
-  api-debug:
-    build: .
-    command: sh -c 'rm tmp/pids/server.pid || true && bundle exec rdebug-ide --host 0.0.0.0 --port 1234 --dispatcher-port 26162 -- bin/rails s -b 0.0.0.0'
-    ports:
-      - 3000:3000
-      - 1234:1234
-      - 26162:26162
-    volumes:
-      - .:/api
-    depends_on:
-      - db
   web:
     build: ../pbot-admin-web
     ports:
