@@ -16,8 +16,10 @@ services:
       - db
   web:
     build: ../pbot-admin-web
+    command: yarn start
     ports:
       - 8000:8000
     volumes:
       - ../pbot-admin-web:/web
-    command: yarn start
+    depends_on:
+      - api
