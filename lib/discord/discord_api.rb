@@ -22,9 +22,17 @@ module Discord
         redirect_uri: 'http://localhost:8000/auth/return',
         scope: 'identify guilds',
         # TODO: get these from Rails.app.secrets
-        client_id: '431216339894534145',
-        client_secret: 'LaJLtKLXpxGrP2h8-w2EOJoK27TIhnqh',
+        client_id: client_id,
+        client_secret: client_secret
       }
+    end
+
+    def self.client_id
+      Rails.application.credentials[Rails.env.to_sym][:discord_client_id]
+    end
+
+    def self.client_secret
+      Rails.application.credentials[Rails.env.to_sym][:discord_client_secret]
     end
   end
 end
