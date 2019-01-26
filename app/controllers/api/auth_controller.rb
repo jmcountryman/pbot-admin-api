@@ -1,16 +1,20 @@
 module Api
   class AuthController < ApplicationController
+    include UsesDiscordApi
+
     def post
       return render plain: 'Auth code missing', status: :bad_request unless params[:code]
 
-      auth_response = Discord::DiscordApi.auth(params[:code])
+      # Get Discord OAuth token
+      auth_response = discord_api.auth(params[:code])
       return head :not_authorized if auth_response.code == 401
 
+      # Get user info
       expiry = DateTime.now + auth_response['expires_in'].seconds
-
-      user_response = Discord::DiscordApi.discord_user(auth_response['access_token'])
+      user_response = discord_api.discord_user(auth_response['access_token'])
       return head :not_authorized if response.code == 401
 
+      # Store tokens
       user = find_user(user_response['id'])
       update_tokens(
         user,
@@ -19,6 +23,7 @@ module Api
         expiry
       )
 
+      # Return JWT
       token = Knock::AuthToken.new(payload: user.to_token_payload).token
       render json: token
     end

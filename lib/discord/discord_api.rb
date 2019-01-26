@@ -21,7 +21,6 @@ module Discord
         # TODO: update this
         redirect_uri: 'http://localhost:8000/auth/return',
         scope: 'identify guilds',
-        # TODO: get these from Rails.app.secrets
         client_id: client_id,
         client_secret: client_secret
       }
