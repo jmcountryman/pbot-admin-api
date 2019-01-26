@@ -1,10 +1,8 @@
 FROM ruby:2.5
 
-RUN mkdir /api
 WORKDIR /api
 
-COPY Gemfile* /api/
-
+COPY Gemfile* ./
 RUN bundle install
 
-COPY . /api
+COPY . .

@@ -1,19 +1,34 @@
 version: '3'
 
 services:
-  db:
-    image: postgres
-    volumes:
-      - ./tmp/db:/var/lib/postgresql/data
   api:
     build: .
     command: bundle exec rails s -b '0.0.0.0'
     ports:
       - 3000:3000
     volumes:
-      - .:/api
+      - ./app:/api/app
+      - ./lib:/api/lib
     depends_on:
-      - db
+      - pg
+      - mongo
+  test:
+    build: .
+    command: bundle exec rspec
+    tty: true # for colored output
+    depends_on:
+      - pg
+      - mongo
+
+  pg: # Used for auth
+    image: postgres
+    volumes:
+      - ./tmp/db/pg:/var/lib/postgresql/data
+  mongo: # Stores pbot configuration
+    image: mongo
+    volumes:
+      - ./tmp/db/mongo:/data/db
+
   web:
     build: ../pbot-admin-web
     command: yarn start
