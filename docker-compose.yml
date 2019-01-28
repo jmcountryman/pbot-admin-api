@@ -1,7 +1,8 @@
 version: '3'
 
 services:
-  api:
+  dev:
+    env_file: development.env
     build: .
     command: bundle exec rails s -b '0.0.0.0'
     ports:
@@ -12,10 +13,21 @@ services:
     depends_on:
       - pg
       - mongo
+    # Enable debugging
+    tty: true
+    stdin_open: true
   test:
+    env_file: development.env
     build: .
     command: bundle exec rspec
     tty: true # for colored output
+    depends_on:
+      - pg
+      - mongo
+  prod:
+    env_file: production.env
+    build: .
+    command: bundle exec rails s -b '0.0.0.0' # TODO: make this passenger probably
     depends_on:
       - pg
       - mongo
@@ -29,12 +41,13 @@ services:
     volumes:
       - ./tmp/db/mongo:/data/db
 
-  web:
-    build: ../pbot-admin-web
-    command: yarn start
-    ports:
-      - 8000:8000
-    volumes:
-      - ../pbot-admin-web:/web
-    depends_on:
-      - api
+  # TODO
+  # web:
+  #   build: ../pbot-admin-web
+  #   command: yarn start
+  #   ports:
+  #     - 8000:8000
+  #   volumes:
+  #     - ../pbot-admin-web:/web
+  #   depends_on:
+  #     - api

@@ -8,8 +8,16 @@ module Discord
       self.post('/oauth2/token', body: auth_data(code))
     end
 
-    def self.discord_user(access_code)
-      self.get('/users/@me', headers: {Authorization: "Bearer #{access_code}"})
+    def self.bot_user
+      self.get('/users/@me', headers: {Authorization: "Bot #{client_token}"})
+    end
+
+    def self.current_user(user_token)
+      self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"})
+    end
+
+    def self.get_user(user_id)
+      self.get("/users/#{user_id}", headers: {Authorization: "Bot #{client_token}"})
     end
     
     private
@@ -32,6 +40,10 @@ module Discord
 
     def self.client_secret
       Rails.application.credentials[Rails.env.to_sym][:discord_client_secret]
+    end
+
+    def self.client_token
+      Rails.application.credentials[Rails.env.to_sym][:discord_client_token]
     end
   end
 end

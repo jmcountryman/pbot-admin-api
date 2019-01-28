@@ -4,5 +4,7 @@ Rails.application.routes.draw do
     get '/' => 'api#root'
 
     post 'auth' => 'auth#post'
+
+    resource :intro_sounds
   end
 end

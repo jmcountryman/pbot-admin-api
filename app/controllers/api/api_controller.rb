@@ -1,6 +1,6 @@
 module Api
   class ApiController < ApplicationController
-    before_action :authenticate_user, except: :root
+    before_action :authenticate_user
 
     def root
       head :ok

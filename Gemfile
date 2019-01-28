@@ -9,6 +9,8 @@ gem 'rails', '~> 5.2.1'
 gem 'pg', '>= 0.18', '< 2.0'
 # Use mongoid for pbot config storage
 gem 'mongoid', '~> 7.0'
+# Use Mongo as simple file storage
+gem 'mongo', ' ~> 2.6'
 # Use Puma as the app server
 gem 'puma', '~> 3.11'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
