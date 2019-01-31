@@ -15,6 +15,7 @@ module Api
       render json: sounds
     end
 
+    # TODO: cancancan
     def create
       guild_id, user_id, file = create_params
 
@@ -45,11 +46,11 @@ module Api
     end
 
     def update_params
-      params.permit(:sound_id, :enabled)
+      params.permit(:enabled)
     end
 
     def set_sound
-      @sound = Pbot::IntroSound.find(params.require[:sound_id])
+      @sound = Pbot::IntroSound.find(params[:id])
 
       render nothing: true, status: :not_found unless @sound
     end
