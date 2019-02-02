@@ -36,4 +36,6 @@ describe 'the intro sounds controller' do
       end
     end
   end
+
+  # TODO: tests for index, update, destroy
 end

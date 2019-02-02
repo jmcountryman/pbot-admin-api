@@ -1,11 +1,11 @@
 module Discord
-  class DiscordApi
+  class Api
     include HTTParty
 
     base_uri 'https://discordapp.com/api'
 
-    def self.auth(code)
-      self.post('/oauth2/token', body: auth_data(code))
+    def self.auth(code, redirect_uri)
+      self.post('/oauth2/token', body: auth_data(code, redirect_uri))
     end
 
     def self.bot_user
@@ -22,12 +22,11 @@ module Discord
     
     private
     
-    def self.auth_data(code)
+    def self.auth_data(code, redirect_uri)
       {
         grant_type: 'authorization_code',
         code: code,
-        # TODO: update this
-        redirect_uri: 'http://localhost:8000/auth/return',
+        redirect_uri: redirect_uri,
         scope: 'identify guilds',
         client_id: client_id,
         client_secret: client_secret

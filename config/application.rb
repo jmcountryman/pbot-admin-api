@@ -9,7 +9,7 @@ require "active_record/railtie"
 require "action_controller/railtie"
 # require "action_mailer/railtie"
 # require "action_view/railtie"
-# require "action_cable/engine"
+require "action_cable/engine"
 # require "sprockets/railtie"
 # require "rails/test_unit/railtie"
 
@@ -33,5 +33,6 @@ module PbotAdminApi
     config.api_only = true
     
     config.autoload_paths << "#{Rails.root}/lib"
+    config.eager_load_paths << "#{Rails.root}/lib"
   end
 end

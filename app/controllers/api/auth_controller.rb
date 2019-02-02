@@ -1,18 +1,18 @@
 module Api
   class AuthController < ApplicationController
-    include UsesDiscordApi
+    AUTH_REDIRECT = '/auth/return'
 
     def post
       return render plain: 'Auth code missing', status: :bad_request unless params[:code]
 
       # Get Discord OAuth token
-      auth_response = discord_api.auth(params[:code])
-      return head :not_authorized if auth_response.code == 401
+      auth_response = Discord::Api.auth(params[:code], redirect_uri)
+      return render plain: auth_response.body, status: :not_authorized if auth_response.code == 401
 
       # Get user info
       expiry = DateTime.now + auth_response['expires_in'].seconds
-      user_response = discord_api.current_user(auth_response['access_token'])
-      return head :not_authorized if response.code == 401
+      user_response = Discord::Api.current_user(auth_response['access_token'])
+      return render plain: user_response.body, status: :not_authorized if user_response.code == 401
 
       # Store tokens
       user = find_user(user_response['id'])
@@ -29,6 +29,10 @@ module Api
     end
 
     private
+
+    def redirect_uri
+      [request.protocol, request.host_with_port, AUTH_REDIRECT].join
+    end
 
     def find_user(discord_user_id)
       User.find_or_create_by!(discord_user_id: discord_user_id) do |user|
