@@ -35,11 +35,14 @@ module Api
     end
 
     def find_user(discord_user_id, username)
-      User.find_or_create_by!(discord_user_id: discord_user_id) do |user|
-        user.username = username
+      user = User.find_or_create_by!(discord_user_id: discord_user_id) do |user|
         # knock requires users to have passwords. since we're using OAuth, this can be whatever
         user.password = SecureRandom.hex(16)
       end
+
+      user.update(username: username)
+
+      user
     end
 
     def update_tokens(user, access_token, refresh_token, expiry)

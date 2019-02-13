@@ -23,7 +23,7 @@ module Api
         guild_id: guild_id,
         target_user: user_id,
         file: file,
-        created_by: current_user.username
+        created_by: current_user.id
       )
 
       render json: new_record
