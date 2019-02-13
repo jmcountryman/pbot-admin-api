@@ -12,8 +12,16 @@ module Discord
       self.get('/users/@me', headers: {Authorization: "Bot #{client_token}"})
     end
 
+    def self.bot_guilds
+      self.get('/users/@me/guilds', headers: {Authorization: "Bot #{client_token}"})
+    end
+
     def self.current_user(user_token)
       self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"})
+    end
+
+    def self.user_guilds(user_token)
+      self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"})
     end
 
     def self.get_user(user_id)

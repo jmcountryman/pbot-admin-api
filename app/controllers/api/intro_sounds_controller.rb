@@ -6,8 +6,12 @@ module Api
     def index
       sounds = []
 
-      # TODO: only user guilds (or all guilds for app owner)
-      sounds = Pbot::IntroSound.distinct(:guild_id).map do |guild|
+      # Only fetch sounds for guilds the user and bot are both in
+      user_guild_ids = Discord::Api.user_guilds(current_user.access_token).map { |g| g['id'] }
+      bot_guild_ids = Discord::Api.bot_guilds.map{ |g| g['id'] }
+      guild_ids = user_guild_ids & bot_guild_ids
+
+      sounds = guild_ids.map do |guild|
         # TODO: include guild info (name, icon?)
         {guild_id: guild, sounds: Pbot::IntroSound.for_guild(guild)}
       end
