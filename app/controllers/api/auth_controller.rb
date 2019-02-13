@@ -15,7 +15,7 @@ module Api
       return render plain: user_response.body, status: :not_authorized if user_response.code == 401
 
       # Store tokens
-      user = find_user(user_response['id'])
+      user = find_user(user_response['id'], user_response['username'])
       update_tokens(
         user,
         auth_response['access_token'],
@@ -34,8 +34,9 @@ module Api
       [request.protocol, request.host_with_port, AUTH_REDIRECT].join
     end
 
-    def find_user(discord_user_id)
+    def find_user(discord_user_id, username)
       User.find_or_create_by!(discord_user_id: discord_user_id) do |user|
+        user.username = username
         # knock requires users to have passwords. since we're using OAuth, this can be whatever
         user.password = SecureRandom.hex(16)
       end
