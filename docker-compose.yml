@@ -4,7 +4,6 @@ services:
   dev:
     env_file: development.env
     build: .
-    command: bundle exec rails s -b '0.0.0.0'
     ports:
       - 3000:3000
     volumes:
@@ -40,14 +39,3 @@ services:
     image: mongo
     volumes:
       - ./tmp/db/mongo:/data/db
-
-  # TODO
-  # web:
-  #   build: ../pbot-admin-web
-  #   command: yarn start
-  #   ports:
-  #     - 8000:8000
-  #   volumes:
-  #     - ../pbot-admin-web:/web
-  #   depends_on:
-  #     - api
