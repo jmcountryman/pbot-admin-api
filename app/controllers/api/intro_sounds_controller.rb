@@ -12,8 +12,12 @@ module Api
       guild_ids = user_guild_ids & bot_guild_ids
 
       sounds = guild_ids.map do |guild|
-        # TODO: include guild info (name, icon?)
-        {guild_id: guild, sounds: Pbot::IntroSound.for_guild(guild)}
+        {
+          guild_id: guild,
+          guild_name: Discord::Api.guild_name(guild),
+          guild_icon: Discord::Api.guild_icon(guild, 32),
+          sounds: Pbot::IntroSound.for_guild(guild)
+        }
       end
 
       render json: sounds
