@@ -7,85 +7,103 @@ module Discord
     GUILD_ICON_PATH = 'icons/%{guild_id}/%{icon_hash}.png'
     USER_AVATAR_PATH = 'avatars/%{user_id}/%{avatar_hash}.png'
 
+    CACHE_LIFETIME = 24.hours
+
     base_uri 'https://discordapp.com/api'
 
-    # User token endpoints
-    def self.auth(code, redirect_uri)
-      self.post('/oauth2/token', body: auth_data(code, redirect_uri))
-    end
-
-    def self.current_user(user_token)
-      self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"})
-    end
-
-    def self.user_guilds(user_token)
-      self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"})
-    end
-
-    # Bot token endpoints
-    def self.bot_user
-      self.get('/users/@me', headers: bot_header)
-    end
-
-    def self.bot_guilds
-      self.get('/users/@me/guilds', headers: bot_header)
-    end
-
-    def self.get_user(user_id)
-      self.get("/users/#{user_id}", headers: bot_header)
-    end
-
-    def self.get_guild(guild_id)
-      cache_key = "guild/#{guild_id}"
-
-      Rails.cache.fetch(cache_key) do
-        self.get("/guilds/#{guild_id}", headers: bot_header).to_hash
+    class << self
+      # User token endpoints
+      def auth(code, redirect_uri)
+        self.post('/oauth2/token', body: auth_data(code, redirect_uri))
       end
-    end
 
-    def self.guild_name(guild_id)
-      self.get_guild(guild_id)['name']
-    end
+      def current_user(user_token)
+        cached "users/#{current_user.discord_user_id}" do
+          self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"}).to_h
+        end
+      end
 
-    def self.guild_icon(guild_id, size=nil)
-      guild = self.get_guild(guild_id)
-      icon_hash = guild['icon']
+      def user_guilds(user_token)
+        cached "users/#{current_user.discord_user_id}/guilds" do
+          self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"}).to_h
+        end
+      end
 
-      return nil unless icon_hash
+      # Bot token endpoints
+      def bot_user
+        cached 'users/bot' do
+          self.get('/users/@me', headers: bot_header).to_h
+        end
+      end
 
-      icon_path = GUILD_ICON_PATH % {guild_id: guild_id, icon_hash: icon_hash}
-      size_query = {size: size}.to_query if size
+      def bot_guilds
+        cached 'users/bot/guild' do
+          self.get('/users/@me/guilds', headers: bot_header).to_h
+        end
+      end
 
-      return "#{URI.join(DISCORD_CDN_URL, icon_path)}?#{size_query}"
-    end
-    
-    private
-    
-    def self.auth_data(code, redirect_uri)
-      {
-        grant_type: 'authorization_code',
-        code: code,
-        redirect_uri: redirect_uri,
-        scope: 'identify guilds',
-        client_id: client_id,
-        client_secret: client_secret
-      }
-    end
+      def get_user(user_id)
+        cached "users/#{user_id}" do
+          self.get("/users/#{user_id}", headers: bot_header).to_h
+        end
+      end
 
-    def self.client_id
-      Rails.application.credentials[Rails.env.to_sym][:discord_client_id]
-    end
+      def get_guild(guild_id)
+        cached "guild/#{guild_id}" do
+          self.get("/guilds/#{guild_id}", headers: bot_header).to_h
+        end
+      end
 
-    def self.client_secret
-      Rails.application.credentials[Rails.env.to_sym][:discord_client_secret]
-    end
+      def guild_name(guild_id)
+        self.get_guild(guild_id)['name']
+      end
 
-    def self.client_token
-      Rails.application.credentials[Rails.env.to_sym][:discord_client_token]
-    end
+      def guild_icon(guild_id, size=nil)
+        guild = self.get_guild(guild_id)
+        icon_hash = guild['icon']
 
-    def self.bot_header
-      {Authorization: "Bot #{client_token}"}
+        return nil unless icon_hash
+
+        icon_path = GUILD_ICON_PATH % {guild_id: guild_id, icon_hash: icon_hash}
+        size_query = {size: size}.to_query if size
+
+        return "#{URI.join(DISCORD_CDN_URL, icon_path)}?#{size_query}"
+      end
+      
+      private
+
+      def cached(key, &block)
+        Rails.cache.fetch(key, expires_in: CACHE_LIFETIME) do
+          block.call
+        end
+      end
+      
+      def auth_data(code, redirect_uri)
+        {
+          grant_type: 'authorization_code',
+          code: code,
+          redirect_uri: redirect_uri,
+          scope: 'identify guilds',
+          client_id: client_id,
+          client_secret: client_secret
+        }
+      end
+
+      def client_id
+        Rails.application.credentials[Rails.env.to_sym][:discord_client_id]
+      end
+
+      def client_secret
+        Rails.application.credentials[Rails.env.to_sym][:discord_client_secret]
+      end
+
+      def client_token
+        Rails.application.credentials[Rails.env.to_sym][:discord_client_token]
+      end
+
+      def bot_header
+        {Authorization: "Bot #{client_token}"}
+      end
     end
   end
 end
