@@ -17,15 +17,15 @@ module Discord
         self.post('/oauth2/token', body: auth_data(code, redirect_uri))
       end
 
-      def current_user(user_token)
-        cached "users/#{current_user.discord_user_id}" do
-          self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"}).to_h
-        end
+      # Get the user profile using their token
+      def user_info_from_token(user_token)
+        self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"})
       end
 
+      # This takes the user_token instead of a user ID because the bot can't see users' guilds
       def user_guilds(user_token)
-        cached "users/#{current_user.discord_user_id}/guilds" do
-          self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"}).to_h
+        cached "users/#{user_from_token(user_token).id}/guilds" do
+          JSON.parse self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"}).body
         end
       end
 
@@ -38,7 +38,7 @@ module Discord
 
       def bot_guilds
         cached 'users/bot/guild' do
-          self.get('/users/@me/guilds', headers: bot_header).to_h
+          JSON.parse self.get('/users/@me/guilds', headers: bot_header).body
         end
       end
 
@@ -87,6 +87,11 @@ module Discord
           client_id: client_id,
           client_secret: client_secret
         }
+      end
+
+      # Get the user record from the database based on their stored access token
+      def user_from_token(user_token)
+        User.joins(:oauth_token).where(oauth_tokens: {access_token: user_token}).first
       end
 
       def client_id

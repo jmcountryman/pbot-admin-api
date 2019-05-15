@@ -9,23 +9,25 @@ module Pbot
     field :enabled, type: Boolean, default: true
     field :created_by, type: String
 
-    def self.build(guild_id:, target_user:, file:, created_by:)
-      file_id = MongoFs.fs.upload_from_stream(file.original_filename, file)
+    class << self
+      def build(guild_id:, target_user:, file:, created_by:)
+        file_id = MongoFs.fs.upload_from_stream(file.original_filename, file)
 
-      self.create!(
-        target_user: target_user,
-        guild_id: guild_id,
-        file_id: file_id,
-        created_by: created_by
-      )
-    end
+        self.create!(
+          target_user: target_user,
+          guild_id: guild_id,
+          file_id: file_id,
+          created_by: created_by
+        )
+      end
 
-    def self.for_guild(guild_id)
-      where(guild_id: guild_id)
-    end
+      def for_guild(guild_id)
+        where(guild_id: guild_id)
+      end
 
-    def self.for_user(guild_id, user_id)
-      where(guild_id: guild_id, target_user: user_id)
+      def for_user(guild_id, user_id)
+        where(guild_id: guild_id, target_user: user_id)
+      end
     end
 
     def sound_file
@@ -35,8 +37,8 @@ module Pbot
     def as_json(options = {})
       {
         id: id.to_s,
-        # TODO: target_user: 
         enabled: enabled,
+        target_user: Discord::Api.get_user(target_user),
         file: {
           id: sound_file['_id'].to_s,
           filename: sound_file['filename']

@@ -11,7 +11,7 @@ module Api
 
       # Get user info
       expiry = DateTime.now + auth_response['expires_in'].seconds
-      user_response = Discord::Api.current_user(auth_response['access_token'])
+      user_response = Discord::Api.user_info_from_token(auth_response['access_token'])
       return render plain: user_response.body, status: :not_authorized if user_response.code == 401
 
       # Store tokens
