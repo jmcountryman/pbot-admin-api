@@ -37,43 +37,35 @@ module Discord
       end
 
       def bot_guilds
-        cached 'users/bot/guild' do
+        cached 'users/bot/guilds' do
           JSON.parse self.get('/users/@me/guilds', headers: bot_header).body
         end
       end
 
       def get_user(user_id)
         cached "users/#{user_id}" do
-          self.get("/users/#{user_id}", headers: bot_header).to_h
+          user = self.get("/users/#{user_id}", headers: bot_header).to_h
+          user['avatar'] = avatar_for_user(user)
+
+          user
         end
       end
 
       def get_guild(guild_id)
         cached "guild/#{guild_id}" do
-          self.get("/guilds/#{guild_id}", headers: bot_header).to_h
+          guild = self.get("/guilds/#{guild_id}", headers: bot_header).to_h
+          guild['icon'] = icon_for_guild(guild)
+
+          guild
         end
-      end
-
-      def guild_name(guild_id)
-        self.get_guild(guild_id)['name']
-      end
-
-      def guild_icon(guild_id, size=nil)
-        guild = self.get_guild(guild_id)
-        icon_hash = guild['icon']
-
-        return nil unless icon_hash
-
-        icon_path = GUILD_ICON_PATH % {guild_id: guild_id, icon_hash: icon_hash}
-        size_query = {size: size}.to_query if size
-
-        return "#{URI.join(DISCORD_CDN_URL, icon_path)}?#{size_query}"
       end
       
       private
 
       def cached(key, &block)
         Rails.cache.fetch(key, expires_in: CACHE_LIFETIME) do
+          Rails.logger.info "Cache miss for '#{key}'"
+          
           block.call
         end
       end
@@ -92,6 +84,26 @@ module Discord
       # Get the user record from the database based on their stored access token
       def user_from_token(user_token)
         User.joins(:oauth_token).where(oauth_tokens: {access_token: user_token}).first
+      end
+
+      def avatar_for_user(user, size=nil)
+        avatar_hash = user['avatar']
+        return nil unless avatar_hash
+
+        avatar_path = USER_AVATAR_PATH % {user_id: user['id'], avatar_hash: avatar_hash}
+        size_query = {size: size}.to_query if size
+
+        return "#{URI.join(DISCORD_CDN_URL, avatar_path)}?#{size_query}"
+      end
+
+      def icon_for_guild(guild, size=nil)
+        icon_hash = guild['icon']
+        return nil unless icon_hash
+
+        icon_path = GUILD_ICON_PATH % {guild_id: guild['id'], icon_hash: icon_hash}
+        size_query = {size: size}.to_query if size
+
+        return "#{URI.join(DISCORD_CDN_URL, icon_path)}?#{size_query}"
       end
 
       def client_id

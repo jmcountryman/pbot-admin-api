@@ -11,12 +11,13 @@ module Api
       bot_guild_ids = Discord::Api.bot_guilds.map{ |g| g['id'] }
       guild_ids = user_guild_ids & bot_guild_ids
 
-      sounds = guild_ids.map do |guild|
+      sounds = guild_ids.map do |guild_id|
+        guild = Discord::Api.get_guild(guild_id)
         {
-          guild_id: guild,
-          guild_name: Discord::Api.guild_name(guild),
-          guild_icon: Discord::Api.guild_icon(guild, 32),
-          sounds: Pbot::IntroSound.for_guild(guild)
+          guild_id: guild_id,
+          guild_name: guild['name'],
+          guild_icon: guild['icon'],
+          sounds: Pbot::IntroSound.for_guild(guild_id)
         }
       end
 
