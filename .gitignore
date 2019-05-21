@@ -13,6 +13,7 @@
 !/log/.keep
 !/tmp/.keep
 
+*.sqlite3
 
 .byebug_history
 
