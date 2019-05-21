@@ -1,3 +1,7 @@
+require 'discord/models/guild'
+require 'discord/models/user'
+require 'discord/errors'
+
 module Discord
   class Api
     include HTTParty
@@ -12,6 +16,14 @@ module Discord
     base_uri 'https://discordapp.com/api'
 
     class << self
+      def get(*args)
+        response = super
+
+        return response.parsed_response if response.ok?
+
+        raise Errors.class_for_code(response.code).new(response.body)
+      end
+
       # User token endpoints
       def auth(code, redirect_uri)
         self.post('/oauth2/token', body: auth_data(code, redirect_uri))
@@ -19,44 +31,43 @@ module Discord
 
       # Get the user profile using their token
       def user_info_from_token(user_token)
-        self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"})
+        Discord::Models::User.new(
+          self.get('/users/@me', headers: {Authorization: "Bearer #{user_token}"})
+        )
       end
 
       # This takes the user_token instead of a user ID because the bot can't see users' guilds
       def user_guilds(user_token)
         cached "users/#{user_from_token(user_token).id}/guilds" do
-          JSON.parse self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"}).body
+          self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"})
+            .map { | guild| Discord::Models::Guild.new(guild) }
         end
       end
 
       # Bot token endpoints
       def bot_user
         cached 'users/bot' do
-          self.get('/users/@me', headers: bot_header).to_h
+          Discord::Models::User.new(self.get('/users/@me', headers: bot_header))
         end
       end
 
       def bot_guilds
         cached 'users/bot/guilds' do
-          JSON.parse self.get('/users/@me/guilds', headers: bot_header).body
+          self.get('/users/@me/guilds', headers: bot_header).map do |guild|
+            Discord::Models::Guild.new(guild)
+          end
         end
       end
 
       def get_user(user_id)
         cached "users/#{user_id}" do
-          user = self.get("/users/#{user_id}", headers: bot_header).to_h
-          user['avatar'] = avatar_for_user(user)
-
-          user
+          Discord::Models::User.new(self.get("/users/#{user_id}", headers: bot_header))
         end
       end
 
       def get_guild(guild_id)
         cached "guild/#{guild_id}" do
-          guild = self.get("/guilds/#{guild_id}", headers: bot_header).to_h
-          guild['icon'] = icon_for_guild(guild)
-
-          guild
+          Discord::Models::Guild.new(self.get("/guilds/#{guild_id}", headers: bot_header))
         end
       end
       
@@ -65,7 +76,7 @@ module Discord
       def cached(key, &block)
         Rails.cache.fetch(key, expires_in: CACHE_LIFETIME) do
           Rails.logger.info "Cache miss for '#{key}'"
-          
+
           block.call
         end
       end
@@ -84,26 +95,6 @@ module Discord
       # Get the user record from the database based on their stored access token
       def user_from_token(user_token)
         User.joins(:oauth_token).where(oauth_tokens: {access_token: user_token}).first
-      end
-
-      def avatar_for_user(user, size=nil)
-        avatar_hash = user['avatar']
-        return nil unless avatar_hash
-
-        avatar_path = USER_AVATAR_PATH % {user_id: user['id'], avatar_hash: avatar_hash}
-        size_query = {size: size}.to_query if size
-
-        return "#{URI.join(DISCORD_CDN_URL, avatar_path)}?#{size_query}"
-      end
-
-      def icon_for_guild(guild, size=nil)
-        icon_hash = guild['icon']
-        return nil unless icon_hash
-
-        icon_path = GUILD_ICON_PATH % {guild_id: guild['id'], icon_hash: icon_hash}
-        size_query = {size: size}.to_query if size
-
-        return "#{URI.join(DISCORD_CDN_URL, icon_path)}?#{size_query}"
       end
 
       def client_id

@@ -4,19 +4,17 @@ module Api
     before_action :set_sound, only: [:update, :destroy]
 
     def index
-      sounds = []
-
       # Only fetch sounds for guilds the user and bot are both in
-      user_guild_ids = Discord::Api.user_guilds(current_user.access_token).map { |g| g['id'] }
-      bot_guild_ids = Discord::Api.bot_guilds.map{ |g| g['id'] }
+      user_guild_ids = Discord::Api.user_guilds(current_user.access_token).map(&:id)
+      bot_guild_ids = Discord::Api.bot_guilds.map(&:id)
       guild_ids = user_guild_ids & bot_guild_ids
 
       sounds = guild_ids.map do |guild_id|
         guild = Discord::Api.get_guild(guild_id)
         {
           guild_id: guild_id,
-          guild_name: guild['name'],
-          guild_icon: guild['icon'],
+          guild_name: guild.name,
+          guild_icon: guild.icon,
           sounds: Pbot::IntroSound.for_guild(guild_id)
         }
       end

@@ -7,15 +7,13 @@ module Api
 
       # Get Discord OAuth token
       auth_response = Discord::Api.auth(params[:code], redirect_uri)
-      return render plain: auth_response.body, status: :not_authorized if auth_response.code == 401
 
       # Get user info
       expiry = DateTime.now + auth_response['expires_in'].seconds
       user_response = Discord::Api.user_info_from_token(auth_response['access_token'])
-      return render plain: user_response.body, status: :not_authorized if user_response.code == 401
 
       # Store tokens
-      user = find_user(user_response['id'], user_response['username'])
+      user = find_user(user_response.id, user_response.username)
       update_tokens(
         user,
         auth_response['access_token'],
