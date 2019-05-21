@@ -28,6 +28,10 @@ gem 'bootsnap', '>= 1.1.0', require: false
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
 
+group :test do
+  gem 'sqlite3', '~> 1.3.6'
+end
+
 group :development, :test do
   gem 'pry-rails'
 

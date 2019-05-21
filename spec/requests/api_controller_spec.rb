@@ -16,7 +16,7 @@ describe 'the base API controller' do
 
     context 'with an unauthenticated user' do
       before do
-        get '/api'
+        get '/api/intro_sounds'
       end
 
       it 'responds with a 401' do
