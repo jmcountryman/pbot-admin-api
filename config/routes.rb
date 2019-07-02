@@ -5,6 +5,8 @@ Rails.application.routes.draw do
 
     post 'auth' => 'auth#post'
 
-    resources :intro_sounds, except: :show
+    resources :guilds, only: :index do
+      resources :intro_sounds, except: :show
+    end
   end
 end

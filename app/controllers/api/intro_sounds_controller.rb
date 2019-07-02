@@ -1,28 +1,17 @@
 module Api
-  class IntroSoundsController < ApplicationController
-    before_action :authenticate_user
+  class IntroSoundsController < ApiController
+    include UsesGuilds
+
+    before_action :verify_guild_access, except: :index
     before_action :set_sound, only: [:update, :destroy]
 
     def index
-      # Only fetch sounds for guilds the user and bot are both in
-      user_guild_ids = Discord::Api.user_guilds(current_user.access_token).map(&:id)
-      bot_guild_ids = Discord::Api.bot_guilds.map(&:id)
-      guild_ids = user_guild_ids & bot_guild_ids
+      return render json: [] unless allowed_guild_ids.include? params[:guild_id]
 
-      sounds = guild_ids.map do |guild_id|
-        guild = Discord::Api.get_guild(guild_id)
-        {
-          guild_id: guild_id,
-          guild_name: guild.name,
-          guild_icon: guild.icon,
-          sounds: Pbot::IntroSound.for_guild(guild_id)
-        }
-      end
-
-      render json: sounds
+      render json: Pbot::IntroSound.for_guild(params[:guild_id])
     end
 
-    # TODO: cancancan
+    # TODO: pundit
     def create
       guild_id, user_id, file = create_params
 
@@ -47,9 +36,13 @@ module Api
     end
 
     private
+
+    def verify_guild_access
+      head :forbidden unless allowed_guild_ids.include? params[:guild_id]
+    end
     
     def create_params
-      params.require([:guild, :user, :file])
+      params.require([:guild_id, :user, :file])
     end
 
     def update_params
@@ -57,9 +50,9 @@ module Api
     end
 
     def set_sound
-      @sound = Pbot::IntroSound.find(params[:id])
+      @sound = Pbot::IntroSound.where(guild_id: params[:guild_id]).find(params[:id])
 
-      render nothing: true, status: :not_found unless @sound
+      head :not_found unless @sound
     end
   end
 end

@@ -15,8 +15,10 @@ describe 'the base API controller' do
     end
 
     context 'with an unauthenticated user' do
+      let(:guild_id) { 1 }
+      
       before do
-        get '/api/intro_sounds'
+        get api_guild_intro_sounds_path(guild_id)
       end
 
       it 'responds with a 401' do
