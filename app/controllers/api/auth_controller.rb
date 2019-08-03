@@ -7,6 +7,7 @@ module Api
 
       # Get Discord OAuth token
       auth_response = Discord::Api.auth(params[:code], redirect_uri)
+      return handle_error(auth_response) unless auth_response.ok?
 
       # Get user info
       expiry = DateTime.now + auth_response['expires_in'].seconds
@@ -27,6 +28,13 @@ module Api
     end
 
     private
+
+    def handle_error(auth_response)
+      return render status: :bad_request, json: {
+        code: auth_response.code,
+        reason: auth_response.body
+      }
+    end
 
     def redirect_uri
       [request.protocol, request.host_with_port, AUTH_REDIRECT].join
