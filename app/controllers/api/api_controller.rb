@@ -1,5 +1,7 @@
 module Api
   class ApiController < ApplicationController
+    include Pundit
+
     before_action :authenticate_user, except: :root
 
     rescue_from Discord::Errors::DiscordApiError, with: :handle_discord_error

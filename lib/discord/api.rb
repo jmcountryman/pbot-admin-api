@@ -39,8 +39,12 @@ module Discord
       # This takes the user_token instead of a user ID because the bot can't see users' guilds
       def user_guilds(user_token)
         cached "users/#{user_from_token(user_token).id}/guilds" do
-          self.get('/users/@me/guilds', headers: {Authorization: "Bearer #{user_token}"})
-            .map { | guild| Discord::Models::Guild.new(guild) }
+          self.get(
+            '/users/@me/guilds',
+            headers: {Authorization: "Bearer #{user_token}"}
+          ).map do |guild|
+            Discord::Models::Guild.new(guild)
+          end
         end
       end
 
@@ -48,6 +52,18 @@ module Discord
       def bot_user
         cached 'users/bot' do
           Discord::Models::User.new(self.get('/users/@me', headers: bot_header))
+        end
+      end
+
+      def bot_info
+        cached 'applications/bot' do
+          self.get('/oauth2/applications/@me', headers: bot_header)
+        end
+      end
+
+      def bot_owner
+        cached 'applications/bot/owner' do
+          Discord::Models::User.new(self.bot_info['owner'])
         end
       end
 

@@ -17,16 +17,14 @@ gem 'puma', '~> 3.11'
 # gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
-# Use ActiveModel has_secure_password
 
-# Use Capistrano for deployment
-# gem 'capistrano-rails', group: :development
+gem 'httparty', '~> 0.16.2' # HTTP requests
+gem 'knock', '~> 2.1' # JWT
+gem 'bcrypt', '~> 3.1' # knock dependency
+gem 'pundit', '~> 2.0.1' # resource authorization
 
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.1.0', require: false
-
-# Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
-# gem 'rack-cors'
 
 group :test do
   gem 'sqlite3', '~> 1.3.6'
@@ -45,7 +43,3 @@ group :development do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
 end
-
-gem 'httparty', '~> 0.16.2' # HTTP requests
-gem 'knock', '~> 2.1' # JWT
-gem 'bcrypt', '~> 3.1' # knock dependency

@@ -43,7 +43,7 @@ RSpec.configure do |config|
       'id' => BSON::ObjectId.new
     }
 
-    allow(Pbot::IntroSound).to receive(:build).and_return intro_sound
+    allow(IntroSound).to receive(:build).and_return intro_sound
   end
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your

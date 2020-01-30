@@ -10,7 +10,7 @@ module Discord
         icon_path = Discord::Api::GUILD_ICON_PATH % {guild_id: self.id, icon_hash: icon_hash}
         size_query = {size: size}.to_query if size
 
-        return "#{URI.join(Discord::Api::DISCORD_CDN_URL, icon_path)}?#{size_query}"
+        "#{URI.join(Discord::Api::DISCORD_CDN_URL, icon_path)}?#{size_query}"
       end
     end
   end

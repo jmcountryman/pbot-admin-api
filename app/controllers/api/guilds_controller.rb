@@ -1,9 +1,7 @@
 module Api
   class GuildsController < ApiController
-    include UsesGuilds
-
     def index
-      guilds = allowed_guild_ids.map do |guild_id|
+      guilds = policy_scope(:guild) do |guild_id|
         guild = Discord::Api.get_guild(guild_id)
         {
           id: guild_id,
