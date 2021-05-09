@@ -10,6 +10,8 @@ class IntroSound
 
   after_create :adjust_volume
 
+  store_in collection: 'pbot_intro_sounds'
+
   class << self
     def build(guild_id:, target_user:, file:, created_by:)
       file_id = MongoFs.fs.upload_from_stream(file.original_filename, file)
