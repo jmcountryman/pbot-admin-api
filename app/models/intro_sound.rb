@@ -8,6 +8,8 @@ class IntroSound
   field :enabled, type: Boolean, default: true
   field :created_by, type: String
 
+  after_create :adjust_volume
+
   class << self
     def build(guild_id:, target_user:, file:, created_by:)
       file_id = MongoFs.fs.upload_from_stream(file.original_filename, file)
@@ -43,5 +45,11 @@ class IntroSound
         filename: sound_file['filename']
       }
     }
+  end
+
+  private
+
+  def adjust_volume
+    VolumeAdjustmentJob.perform_later(self.id.to_s)
   end
 end
