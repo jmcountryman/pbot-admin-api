@@ -18,7 +18,7 @@ gem 'puma', '~> 3.11'
 # Use Redis adapter to run Action Cable in production
 # gem 'redis', '~> 4.0'
 
-gem 'httparty', '~> 0.16.2' # HTTP requests
+gem 'httparty', '~> 0.21.0' # HTTP requests
 gem 'knock', '~> 2.1' # JWT
 gem 'bcrypt', '~> 3.1' # knock dependency
 gem 'pundit', '~> 2.0.1' # resource authorization
